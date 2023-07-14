@@ -1,4 +1,5 @@
 import telebot
+from telebot import types
 import schedule
 import time
 
@@ -9,18 +10,22 @@ start_time = time.time()
 
 
 def check_message(message):
-  if message.text == '/start':
-    start(message)
+  if message.text == 'Начать':
+    start_message(message)
   else:
     return True
 
 
-@bot.message_handler(commands=['start'])
-def start(message):
+markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+start_button = types.KeyboardButton('Начать')
+markup.add(start_button)
+
+
+@bot.message_handler(func=lambda message: True)
+def start_message(message):
   global CHAT_ID
   CHAT_ID = message.chat.id
-  bot.send_message(CHAT_ID, 'Привет! Добро пожаловать в бота.')
-  bot.send_message(CHAT_ID, 'Введите ваше имя:')
+  bot.send_message(CHAT_ID, 'Введите ваше имя:', reply_markup=markup)
   bot.register_next_step_handler(message, ask_question)
 
 
