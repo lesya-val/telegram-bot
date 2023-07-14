@@ -1,18 +1,34 @@
 import telebot
-from telebot import types
 
-token = '6306041543:AAFHxK1lULkkc54M2ddZwodaJHvXfqN5eO0'
-bot = telebot.TeleBot(token)
+TOKEN = '6306041543:AAFHxK1lULkkc54M2ddZwodaJHvXfqN5eO0'
+bot = telebot.TeleBot(TOKEN)
 
 
-# Start
+def check_message(message):
+  if message.text == '/start':
+    start(message)
+  else:
+    return True
+
+
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item = types.KeyboardButton('Начать')
-    markup.row(item)
-
-    bot.send_message(message.chat.id, "Привет! Нажми 'Начать' для продолжения.", reply_markup=markup)
+  bot.send_message(message.chat.id, 'Привет! Добро пожаловать в бота.')
+  bot.send_message(message.chat.id, 'Введите ваше имя:')
+  bot.register_next_step_handler(message, ask_question)
 
 
-bot.infinity_polling()
+def ask_question(message):
+  if check_message(message):
+    name = message.text
+    bot.send_message(message.chat.id, 'Введите ваш вопрос:')
+    bot.register_next_step_handler(message, handle_question, name)
+
+
+def handle_question(message, name):
+  if check_message(message):
+    question = message.text
+    bot.send_message(message.chat.id, f'Спасибо, {name}! Вы задали вопрос: {question}')
+
+
+bot.polling(none_stop=True)
