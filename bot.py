@@ -1,7 +1,11 @@
 import telebot
+import schedule
+import time
 
 TOKEN = '6306041543:AAFHxK1lULkkc54M2ddZwodaJHvXfqN5eO0'
+CHAT_ID = None
 bot = telebot.TeleBot(TOKEN)
+start_time = time.time()
 
 
 def check_message(message):
@@ -13,22 +17,35 @@ def check_message(message):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-  bot.send_message(message.chat.id, 'Привет! Добро пожаловать в бота.')
-  bot.send_message(message.chat.id, 'Введите ваше имя:')
+  global CHAT_ID
+  CHAT_ID = message.chat.id
+  bot.send_message(CHAT_ID, 'Привет! Добро пожаловать в бота.')
+  bot.send_message(CHAT_ID, 'Введите ваше имя:')
   bot.register_next_step_handler(message, ask_question)
 
 
 def ask_question(message):
   if check_message(message):
     name = message.text
-    bot.send_message(message.chat.id, 'Введите ваш вопрос:')
+    bot.send_message(CHAT_ID, 'Введите ваш вопрос:')
     bot.register_next_step_handler(message, handle_question, name)
 
 
 def handle_question(message, name):
   if check_message(message):
     question = message.text
-    bot.send_message(message.chat.id, f'Спасибо, {name}! Вы задали вопрос: {question}')
+    bot.send_message(CHAT_ID, f'Спасибо, {name}! Вы задали вопрос: {question}')
 
 
-bot.polling(none_stop=True)
+def send_days():
+  global CHAT_ID
+  days_count = int((time.time() - start_time) // (24 * 60 * 60))
+  bot.send_message(CHAT_ID, f'Прошло {days_count} дней со старта')
+
+
+schedule.every().day.at("12:00").do(send_days)
+
+while True:
+  schedule.run_pending()
+  time.sleep(1)
+  bot.polling(none_stop=True)
